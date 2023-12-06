@@ -1,0 +1,93 @@
+import requests
+import pandas as pd
+from bs4 import BeautifulSoup
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
+from webdriver_manager.chrome import ChromeDriverManager
+import time
+
+s = Service(ChromeDriverManager().install())
+opc = Options()
+opc.add_argument("--window-size= 1020, 1200")
+
+def amazonMx(busqueda):
+    # mandar comando a la barra de busqueda para que escriba el item escrito y hacer el web scrapping desde la pagina que resulte
+    navegador = webdriver.Chrome(service=s, options=opc)
+    navegador.get("https://www.amazon.com.mx/")
+    barra = navegador.find_element(By.ID, value="twotabsearchtextbox")
+    time.sleep(2)
+    barra.send_keys(busqueda)
+    time.sleep(3)
+    barra.send_keys(Keys.ENTER)
+
+    paginaN = navegador.current_url
+    pagina = requests.get(url=paginaN)
+
+    datos = {
+        "Marca": [],
+        "Tienda": [],
+        "Pais": [],
+        "Producto": [],
+        "Precio": [],
+        "Calificacion": [],
+        "Puntuaciones": []
+    }
+
+    soup = BeautifulSoup(pagina.content, "html.parser")
+    productos = soup.find_all('div', {'class': 'sg-col-inner'})
+    #i va a equivaler a cada producto disponible en la pagina porque comparten el atributo del soup
+    for i in productos:
+        marca = "Samsung"
+        tienda = "Amazon"
+        pais = "Mexico"
+        producto = i.find('a', {'class': 'a-link-normal s-underline-text s-underline-link-text s-link-style a-text-normal'})
+        try:
+            precio = i.find('span', {'class': 'a-offscreen'})
+        except:
+            precio = "No disponible"
+        #8 es el limite de valores del string de modo que en lugar de tomar la puntuacion + " estrellas" solamente debera tomar la puntuacion
+        calificacion = i.find('span', {'class': 'a-icon-alt'})
+        try:
+        #int para que sea valor numerico directamente, esto no se hizo con el precio para que tambien tomara el signo de dinero
+            puntuaciones = int(i.find('span', {'class': 'a-size-base s-underline-text'}))
+        except:
+            puntuaciones = 0
+
+        datos["Marca"].append(marca.text)
+        datos["Tienda"].append(tienda.text)
+        datos["Pais"].append(pais.text)
+        datos["Producto"].append(producto.text)
+        datos["Precio"].append(precio.text)
+        datos["Calificacion"].append(calificacion.text)
+        datos["Puntuaciones"].append(puntuaciones.text)
+
+    data_df = pd.DataFrame(datos)
+    print(data_df)
+    time.sleep(20)
+    navegador.close()
+
+
+def samsungMx(busqueda):
+    pass
+
+
+def mercadoLibre(busqueda):
+    pass
+
+def amazonUS(busqueda):
+    pass
+
+def samsungUS(busqueda):
+    pass
+
+
+def bestBuy(busqueda):
+    pass
+
+
+amazonMx("s22")
+
+#codigo en progreso(entrega proyecto viernes 8 de diciembre
