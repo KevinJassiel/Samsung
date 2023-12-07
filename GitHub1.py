@@ -85,28 +85,56 @@ def amazonMx(busqueda):
         time.sleep(5)
     navegador.close()  # <-- LO SAQUE DEL CICLO, PORQUE CIERRA EL NAVEGADOR, ANTES DE ACABAR EL CICLO DE LAS PAGINAS
 
-
-def samsungMx(busqueda):
-    pass
-
-
 def mercadoLibre(busqueda):
-    pass
-
+    #testeo para probar barras de busqueda
+    global datos
+    # mandar comando a la barra de busqueda para que escriba el item escrito y hacer el web scrapping desde la pagina que resulte
+    navegador = webdriver.Chrome(service=s, options=opc)
+    navegador.get("https://www.mercadolibre.com.mx/")
+    barra = navegador.find_element(By.ID, value="cb1-edit")
+    time.sleep(2)
+    barra.send_keys(busqueda)
+    time.sleep(3)
+    barra.send_keys(Keys.ENTER)
+    time.sleep(10)
+    navegador.close()
 
 def amazonUS(busqueda):
-    pass
-
-
-def samsungUS(busqueda):
-    pass
+    # testeo para probar barras de busqueda
+    global datos
+    # mandar comando a la barra de busqueda para que escriba el item escrito y hacer el web scrapping desde la pagina que resulte
+    navegador = webdriver.Chrome(service=s, options=opc)
+    navegador.get("https://www.amazon.com/")
+    barra = navegador.find_element(By.ID, value="twotabsearchtextbox")
+    time.sleep(2)
+    barra.send_keys(busqueda)
+    time.sleep(3)
+    barra.send_keys(Keys.ENTER)
+    time.sleep(10)
+    navegador.close()
 
 
 def bestBuy(busqueda):
-    pass
+    # testeo para probar barras de busqueda
+    global datos
+    # mandar comando a la barra de busqueda para que escriba el item escrito y hacer el web scrapping desde la pagina que resulte
+    navegador = webdriver.Chrome(service=s, options=opc)
+    navegador.get("https://www.bestbuy.com/")
+    time.sleep(3)
+    #Esto se hace porque bestbuy te pide seleccionar un pais para comprar (en este caso usamos us) entonces debemos buscar el id del boton de US y presionarlo
+    us = navegador.find_element(By.CLASS_NAME, value="us-link")
+    us.click()
+    time.sleep(4)
+    barra = navegador.find_element(By.ID, value="gh-search-input")
+    time.sleep(2)
+    barra.send_keys(busqueda)
+    time.sleep(3)
+    barra.send_keys(Keys.ENTER)
+    time.sleep(10)
+    navegador.close()
 
 
-amazonMx("s22")
+bestBuy("s22")
 
 data_df = pd.DataFrame(datos)
 print(data_df)
