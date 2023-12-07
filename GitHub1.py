@@ -35,49 +35,55 @@ def amazonMx(busqueda):
     time.sleep(3)
     barra.send_keys(Keys.ENTER)
 
-
-    # CON PAGE_SOURCE OBTENGO EL CONTENIDO HTML DE LA PAGINA ACTUAL
-    contenido_pagina = navegador.page_source # <--- AGREGUE ESTO
-    #pagina = requests.get(url=paginaN) NO LO OCUPAS
-    soup = BeautifulSoup(contenido_pagina, "html.parser")
-    # CAMBIE LA CLASE, PORQUE LA OTRA CHOCABA CON OTROS ELEMENTOS QUE NO ERAN PRODUCTOS.
-    productos = soup.find_all('div', attrs={'class': 'a-section a-spacing-base'})
-    # i va a equivaler a cada producto disponible en la pagina porque comparten el atributo del soup
-    for i in productos:
-        marca = "Samsung"
-        tienda = "Amazon"
-        pais = "Mexico"
-        producto = i.find("span", attrs={"class": "a-size-base-plus a-color-base a-text-normal"}).text
-        # AGREGUE LOS .TEXT ANTES, PORQUE SI LOS AGREGAS ABAJO MARCA ERROR.
-        # PORQUE EJEMPLO SI NO HAY PRECIO PONES NO DISPONIBLE DIRECTO ESO ES
-        # UNA CADENA POR LO QUE NO TIENE EL ATRIBUTO TEXT.
-        # SI EXISTIERA ENTRA EL TRY, EL FIND REGRESA UN OBJETO QUE TIENE EL ATRIBUTO TEXT
+    cant_paginas = 2
+    # ASI NO FUNCIONA UN CICLO EN PYTHON !!!, tienes que usar range
+    for pagina in range(cant_paginas):
+        print(pagina)
+        # CON PAGE_SOURCE OBTENGO EL CONTENIDO HTML DE LA PAGINA ACTUAL
+        contenido_pagina = navegador.page_source  # <--- AGREGUE ESTO
+        # pagina = requests.get(url=paginaN) NO LO OCUPAS
+        soup = BeautifulSoup(contenido_pagina, "html.parser")
+        # CAMBIE LA CLASE, PORQUE LA OTRA CHOCABA CON OTROS ELEMENTOS QUE NO ERAN PRODUCTOS.
+        productos = soup.find_all('div', attrs={'class': 'a-section a-spacing-base'})
+        # botonSiguiente = soup.find('a', attrs={'class': 's-pagination-item s-pagination-next s-pagination-button s-pagination-separator'})
+        botonSiguiente = navegador.find_element(By.LINK_TEXT, "Siguiente")
+        # i va a equivaler a cada producto disponible en la pagina porque comparten el atributo del soup
+        for i in productos:
+            marca = "Samsung"
+            tienda = "Amazon"
+            pais = "Mexico"
+            producto = i.find("span", attrs={"class": "a-size-base-plus a-color-base a-text-normal"}).text
+            # AGREGUE LOS .TEXT ANTES, PORQUE SI LOS AGREGAS ABAJO MARCA ERROR.
+            # PORQUE EJEMPLO SI NO HAY PRECIO PONES NO DISPONIBLE DIRECTO ESO ES
+            # UNA CADENA POR LO QUE NO TIENE EL ATRIBUTO TEXT.
+            # SI EXISTIERA ENTRA EL TRY, EL FIND REGRESA UN OBJETO QUE TIENE EL ATRIBUTO TEXT
+            try:
+                precio = i.find("span", attrs={"class": "a-price-whole"}).text
+            except:
+                precio = "No disponible"
+            # AGREGUE EL TRY A VECES HAY PRODUCTOS SIN CALIFICAR.
+            try:
+                calificacion = i.find('span', attrs={"class": "a-icon-alt"}).text
+            except:
+                calificacion = "No disponible"
+            try:
+                puntuaciones = i.find('span', attrs={"class": "a-size-base s-underline-text"}).text
+            except:
+                puntuaciones = 0
+            datos["Marca"].append(marca)
+            datos["Tienda"].append(tienda)
+            datos["Pais"].append(pais)
+            datos["Producto"].append(producto)
+            datos["Precio"].append(precio)
+            datos["Calificacion"].append(calificacion)
+            datos["Puntuaciones"].append(puntuaciones)
         try:
-            precio = i.find("span", attrs={"class": "a-price-whole"}).text
+            botonSiguiente.click()
         except:
-            precio = "No disponible"
-
-        # AGREGUE EL TRY A VECES HAY PRODUCTOS SIN CALIFICAR.
-        try:
-            calificacion = i.find('span', attrs={"class": "a-icon-alt"}).text
-        except:
-            calificacion = "No disponible"
-        try:
-
-            puntuaciones = i.find('span', attrs={"class": "a-size-base s-underline-text"}).text
-        except:
-            puntuaciones = 0
-
-        datos["Marca"].append(marca)
-        datos["Tienda"].append(tienda)
-        datos["Pais"].append(pais)
-        datos["Producto"].append(producto)
-        datos["Precio"].append(precio)
-        datos["Calificacion"].append(calificacion)
-        datos["Puntuaciones"].append(puntuaciones)
-
-    time.sleep(30)
-    navegador.close()
+            print("No se pudo acceder a la siguiente pagina o no existe una siguiente pagina")
+            break
+        time.sleep(5)
+    navegador.close()  # <-- LO SAQUE DEL CICLO, PORQUE CIERRA EL NAVEGADOR, ANTES DE ACABAR EL CICLO DE LAS PAGINAS
 
 
 def samsungMx(busqueda):
