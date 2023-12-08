@@ -8,35 +8,34 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 import time
-
 import mysql.connector
 
 def conectar():
     try:
-        conexion = mysql.connector.connect(host=´localhost´,
-                                           port=´3306´,
-                                           user=´root´,
-                                           password=´user´,
-                                           db=´proyecto´)
-if conexion.is_connected():
-    print("Se ha logrado la conexion")
-    informacion = conexion.get_server_info()
-    print(informacion)
-    cursor = conexion.cursor()
-    cursor.execute("SLECT DATABASE()")
-    #Usamos fetchone porque solamente seleccionaremos una bade de datos, proyecto
-    row=cursor.fetchone()
-    print("conectado a:{}".format(row))
-except Exception as error;
-    print("No se logro completar la conexion")
+        conexion = mysql.connector.connect(host="localhost",
+                                           port="3306",
+                                           user="root",
+                                           password="user",
+                                           db="proyecto")
+        if conexion.is_connected():
+            print("Se ha logrado la conexion")
+            informacion = conexion.get_server_info()
+            print(informacion)
+            cursor = conexion.cursor()
+            cursor.execute("SLECT DATABASE()")
+            #Usamos fetchone porque solamente seleccionaremos una bade de datos, proyecto
+            row=cursor.fetchone()
+            print("conectado a:{}".format(row))
+    except Exception as error:
+        print("No se logro completar la conexion")
 
-#seleccionamos 
-cursor.execute("SELECT * FROM tienda")
+    #seleccionamos
+    cursor.execute("SELECT * FROM tienda")
 
-#obtenemos todos los resultados
-tiendas=cursor.fetchall()
-for i in tiendas:
-    print(i)
+    #obtenemos todos los resultados
+    tiendas=cursor.fetchall()
+    for i in tiendas:
+        print(i)
 
 s = Service(ChromeDriverManager().install())
 opc = Options()
