@@ -52,7 +52,7 @@ datos = {
 }
 
 
-def amazonMx(busqueda):
+def amazonMx(busqueda, pgs):
     global datos
     # mandar comando a la barra de busqueda para que escriba el item escrito y hacer el web scrapping desde la pagina que resulte
     navegador = webdriver.Chrome(service=s, options=opc)
@@ -63,8 +63,8 @@ def amazonMx(busqueda):
     time.sleep(3)
     barra.send_keys(Keys.ENTER)
 
-    cant_paginas = 2
-    for pagina in range(cant_paginas):
+    #cant_paginas = 2
+    for pagina in range(pgs):
         print(pagina)
         contenido_pagina = navegador.page_source
         soup = BeautifulSoup(contenido_pagina, "html.parser")
@@ -108,7 +108,7 @@ def amazonMx(busqueda):
         time.sleep(5)
     navegador.close()  # <-- LO SAQUE DEL CICLO, PORQUE CIERRA EL NAVEGADOR, ANTES DE ACABAR EL CICLO DE LAS PAGINAS
 
-def mercadoLibre(busqueda):
+def mercadoLibre(busqueda, pgs):
     #testeo para probar barras de busqueda
     global datos
     # mandar comando a la barra de busqueda para que escriba el item escrito y hacer el web scrapping desde la pagina que resulte
@@ -121,14 +121,14 @@ def mercadoLibre(busqueda):
     barra.send_keys(Keys.ENTER)
     time.sleep(10)
 
-    cant_paginas = 3
-    for pagina in range(cant_paginas):
+    #cant_paginas = 3
+    for pagina in range(pgs):
         print(pagina)
         # con page_source se obtiene el contenido HTML de la pagina actual
         contenido_pagina = navegador.page_source
         soup = BeautifulSoup(contenido_pagina, "html.parser")
         productos = soup.find_all('div', attrs={'class': 'andes-card ui-search-result ui-search-result--core andes-card--flat andes-card--padding-16'})
-        botonSiguiente = navegador.find_element(By.CLASS_NAME, "andes-pagination__arrow-title")
+        botonSiguiente = navegador.find_element(By.LINK_TEXT, "Siguiente")
         # i va a equivaler a cada producto disponible en la pagina porque comparten el atributo del soup
         for i in productos:
             marca = "Samsung"
@@ -164,9 +164,9 @@ def mercadoLibre(busqueda):
             print("No se pudo acceder a la siguiente pagina o no existe una siguiente pagina")
             break
         time.sleep(5)
-    navegador.close()  # <-- LO SAQUE DEL CICLO, PORQUE CIERRA EL NAVEGADOR, ANTES DE ACABAR EL CICLO DE LAS PAGINAS
+    navegador.close()
 
-def amazonUS(busqueda):
+def amazonUS(busqueda, pgs):
     # testeo para probar barras de busqueda
     global datos
     # mandar comando a la barra de busqueda para que escriba el item escrito y hacer el web scrapping desde la pagina que resulte
@@ -180,8 +180,8 @@ def amazonUS(busqueda):
     barra.send_keys(Keys.ENTER)
     time.sleep(10)
 
-    cant_paginas = 2
-    for pagina in range(cant_paginas):
+    #cant_paginas = 2
+    for pagina in range(pgs):
         print(pagina)
         contenido_pagina = navegador.page_source
         soup = BeautifulSoup(contenido_pagina, "html.parser")
@@ -194,9 +194,10 @@ def amazonUS(busqueda):
             pais = "USA"
             #Si no pongo punto text me regresatodo el valor de la etiqueta, si si pongo .text
             #  me marca error 'NoneType' object has no attribute 'text'
-            product = i.find("span", attrs={"class": "a-size-medium a-color-base a-text-normal"})
-            sopa = BeautifulSoup(product, 'html.parser')
-            producto = sopa.get_text()
+            #Error
+            #Error
+            #Error
+            producto = i.find("span", attrs={"class": "a-size-medium a-color-base a-text-normal"}).text
             #.TEXT PORQUE SI LOS AGREGAS ABAJO MARCA ERROR.
             # SI EXISTIERA ENTRA EL TRY, EL FIND REGRESA UN OBJETO QUE TIENE EL ATRIBUTO TEXT
             try:
@@ -227,7 +228,7 @@ def amazonUS(busqueda):
     navegador.close()  # <-- LO SAQUE DEL CICLO, PORQUE CIERRA EL NAVEGADOR, ANTES DE ACABAR EL CICLO DE LAS PAGINAS
 
 
-def bestBuy(busqueda):
+def bestBuy(busqueda, pgs):
     # testeo para probar barras de busqueda
     global datos
     # mandar comando a la barra de busqueda para que escriba el item escrito y hacer el web scrapping desde la pagina que resulte
@@ -245,13 +246,13 @@ def bestBuy(busqueda):
     barra.send_keys(Keys.ENTER)
     time.sleep(10)
 
-    cant_paginas = 2
-    for pagina in range(cant_paginas):
+    #cant_paginas = 2
+    for pagina in range(pgs):
         print(pagina)
         contenido_pagina = navegador.page_source
         soup = BeautifulSoup(contenido_pagina, "html.parser")
         productos = soup.find_all('div', attrs={'class': 'shop-sku-list-item'})
-        botonSiguiente = navegador.find_element(By.CLASS_NAME, "sku-list-page-next")
+        botonSiguiente = navegador.find_element(By.LINK_TEXT, "Next")
         # i va a equivaler a cada producto disponible en la pagina porque comparten el atributo del soup
         for i in productos:
             marca = "Samsung"
@@ -288,8 +289,53 @@ def bestBuy(busqueda):
     navegador.close()  # <-- LO SAQUE DEL CICLO, PORQUE CIERRA EL NAVEGADOR, ANTES DE ACABAR EL CICLO DE LAS PAGINAS
 
 
-amazonUS("s22")
-
-data_df = pd.DataFrame(datos)
-print(data_df)
-data_df.to_csv("C:/Users/ecuri/Desktop/dataset.csv")
+while True:
+    print("-------Menu Proyecto final Programacion para la extraccion de datos-------")
+    opcion = int(input("\nOpciones\n1. Sobre el programa\n2. Extraer datos\n3. Opciones de datos. \n4. Opciones de la base de datos. \n5. Obtener Dashboards.\n6. Salir.\n "))
+    if opcion == 1:
+        print("Texto texto texto")
+    elif opcion == 2:
+        print("Webs de donde es posible extraer datos:")
+        web = int(input("\n1. Amazon Mexico. \n2. Mercado Libre. \n3. Amazon de Estados Unidos. \n4. Best Buy \n"))
+        if web == 1:
+            pags = int(input("De cuantas paginas quieres extraer los datos (cantidad) "))
+            prd = input("Cual es el producto samsung que deseas buscar? solo es necesario el modelo ")
+            amazonMx(prd, pags)
+        elif web == 2:
+            pags = int(input("De cuantas paginas quieres extraer los datos (cantidad) "))
+            prd = input("Cual es el producto samsung que deseas buscar? solo es necesario el modelo ")
+            mercadoLibre(prd, pags)
+        elif web == 3:
+            pags = int(input("De cuantas paginas quieres extraer los datos (cantidad) "))
+            prd = input("Cual es el producto samsung que deseas buscar? solo es necesario el modelo ")
+            amazonUS(prd, pags)
+        elif web == 4:
+            pags = int(input("De cuantas paginas quieres extraer los datos (cantidad) "))
+            prd = input("Cual es el producto samsung que deseas buscar? solo es necesario el modelo ")
+            bestBuy(prd, pags)
+        else:
+            print("Comando invalido")
+    elif opcion == 3:
+        Acciones = int(input("Que deseas hacer con los datos? \n1. Crear un dataframe \n2. Visualizar DataFrame \n3. Convertir dataframe a csv \n"))
+        if Acciones == 1:
+            data_df = pd.DataFrame(datos)
+        elif Acciones == 2:
+            print(data_df)
+        elif Acciones == 3:
+            if len(data_df) == 0:
+                print("El DataFrame está vacío, no se puede realizar la acción.")
+            else:
+                data_df.to_csv("C:/Users/ecuri/Desktop/dataset.csv")
+        else:
+            print("Comando invalido")
+    elif opcion == 4:
+        print("aun nada")
+        pass
+    elif opcion == 5:
+        print("aun nada")
+        pass
+    elif opcion == 6:
+        print("Adios")
+        break
+    else:
+        print("Comando invalido")
