@@ -8,12 +8,12 @@ from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 import time
 import pymongo
-from pymongo import MongoClient
 import plotly.express as px
 import dash
 import dash_bootstrap_components as dbc
 from dash import dcc
 from dash import html
+
 
 def subir():
     myclient = pymongo.MongoClient("mongodb://localhost:27017")
@@ -58,58 +58,115 @@ def dashboards():
 
     #grafica con dash
     pipeline2 = [
-        {"$group": {"_id": "$Pais", "promedio_calificacion": {"$avg": "$Calificacion"},
-                    "suma_puntuaciones": {"$sum": "$Puntuaciones"}}}
+        {
+            "$bucket": {
+                "groupBy": "$Puntuaciones",
+                "boundaries": [0, 100, 200, 300, 400, float('inf')],  # Rangos definidos
+                "default": "no_range",  # Categoría por defecto si no se encuentra en un rango
+                "output": {
+                    "Cantidad_Puntuaciones": {"$sum": 1},
+                    # Contar la cantidad de veces que aparece una puntuación en el rango
+                    "Promedio_Calificacion": {"$avg": "$Calificacion"}
+                }
+            }
+        },
+        {
+            "$project": {
+                "_id": 0,
+                "Rango": {
+                    "$switch": {
+                        "branches": [
+                            {"case": {"$and": [{"$gte": ["$_id", 0]}, {"$lt": ["$_id", 100]}]}, "then": "0-100"},
+                            {"case": {"$and": [{"$gte": ["$_id", 100]}, {"$lt": ["$_id", 200]}]}, "then": "101-200"},
+                            {"case": {"$and": [{"$gte": ["$_id", 200]}, {"$lt": ["$_id", 300]}]}, "then": "201-300"},
+                            {"case": {"$and": [{"$gte": ["$_id", 300]}, {"$lt": ["$_id", 400]}]}, "then": "301-400"},
+                            {"case": {"$gte": ["$_id", 400]}, "then": "401-∞"}
+                        ],
+                        "default": "no_range"
+                    }
+                },
+                "Cantidad_Puntuaciones": 1,
+                "Promedio_Calificacion": 1
+            }
+        }
     ]
-
     resultados2 = list(mycol.aggregate(pipeline2))
-
-    # Crear un DataFrame con los resultados
     df2 = pd.DataFrame(resultados2)
-    # Gráfico de barras para el promedio de Calificacion por Pais
-    fig_promedio_calificacion = px.bar(df2, x='_id', y='promedio_calificacion',
-                                       labels={'_id': 'País', 'promedio_calificacion': 'Promedio de Calificación'})
-    fig_promedio_calificacion.update_layout(title='Promedio de Calificación por País', xaxis_title='País',
-                                            yaxis_title='Promedio de Calificación')
-    # Gráfico de barras para la suma de Puntuaciones por Pais
-    fig_suma_puntuaciones = px.bar(df2, x='_id', y='suma_puntuaciones',
-                                   labels={'_id': 'País', 'suma_puntuaciones': 'Suma de Puntuaciones'})
-    fig_suma_puntuaciones.update_layout(title='Suma de Puntuaciones por País', xaxis_title='País',
-                                        yaxis_title='Suma de Puntuaciones')
-    # Inicializar la aplicación Dash
-    app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
-    # Diseño del dashboard
-    app.layout = dbc.Container([
-        html.H1("Dashboard - País, Promedio de Calificación y Suma de Puntuaciones"),
-        dbc.Row([
-            dbc.Col(dcc.Graph(figure=fig_promedio_calificacion), width=6),
-            dbc.Col(dcc.Graph(figure=fig_suma_puntuaciones), width=6)
-        ]),
-        dbc.Table.from_dataframe(df2, striped=True, bordered=True, hover=True)
-    ])
+    print(df2)
+    app = dash.Dash()
+    app.layout = html.Div(children=[html.H3('Dash sobre Samsung y puntuaciones'),
+                                    dcc.Graph(id='Dashboard',
+                                              figure={
+                                                  'data': [
+                                                      {'x': df2['Rango'], 'y': df2['Cantidad_Puntuaciones'],
+                                                       'type': 'bar', 'name': 'boats'},
+                                                  ],
+                                                  'layout': {
+                                                      'title': 'Dash basico'
+                                                  }
+                                              })
+                                    ])
     if __name__ == '__main__':
         app.run_server(debug=True)
 
-
-def dashboard2():
+def dash2():
     myclient = pymongo.MongoClient("mongodb://localhost:27017")
     mydb = myclient["mercado_gris"]
     mycol = mydb["productos_encontrados"]
 
-    paises = mycol.distinct("Pais")
-    # Consultar los primeros 10 documentos que cumplan con las condiciones por país
-    resultados = []
-    for pais in paises:
-        consulta = {"Pais": pais, "Calificacion": {"$gt": 3.5}, "Puntuaciones": {"$gt": 20}}
-        documentos = list(mycol.find(consulta, {"Calificacion": 1, "Puntuaciones": 1}).limit(10))
-        resultados.extend(documentos)
-    df = pd.DataFrame(resultados)
-    # Gráfico de dispersión con Plotly
-    fig = px.scatter(df, x='Calificacion', y='Puntuaciones', color='Pais',
-                     labels={'Calificacion': 'Calificación', 'Puntuaciones': 'Puntuaciones'})
-    fig.update_layout(title='Calificación vs Puntuaciones por País (Relacion de cantidad de puntuaciones con Calificacion)',
-                      xaxis_title='Calificación', yaxis_title='Puntuaciones')
-    fig.show()
+    pipeline3 = [
+        {
+            "$bucket": {
+                "groupBy": "$Puntuaciones",
+                "boundaries": [0, 100, 200, 300, 400, float('inf')],  # Rangos definidos
+                "default": "no_range",  # Categoría por defecto si no se encuentra en un rango
+                "output": {
+                    "Cantidad_Puntuaciones": {"$sum": 1},
+                        # Contar la cantidad de veces que aparece una puntuación en el rango
+                    "Promedio_Calificacion": {"$avg": "$Calificacion"}
+                }
+            }
+        },
+        {
+            "$project": {
+                "_id": 0,
+                "Rango": {
+                    "$switch": {
+                        "branches": [
+                            {"case": {"$and": [{"$gte": ["$_id", 0]}, {"$lt": ["$_id", 100]}]}, "then": "0-100"},
+                            {"case": {"$and": [{"$gte": ["$_id", 100]}, {"$lt": ["$_id", 200]}]},
+                             "then": "101-200"},
+                            {"case": {"$and": [{"$gte": ["$_id", 200]}, {"$lt": ["$_id", 300]}]},
+                             "then": "201-300"},
+                            {"case": {"$and": [{"$gte": ["$_id", 300]}, {"$lt": ["$_id", 400]}]},
+                             "then": "301-400"},
+                            {"case": {"$gte": ["$_id", 400]}, "then": "401-∞"}
+                        ],
+                        "default": "no_range"
+                    }
+                },
+                "Cantidad_Puntuaciones": 1,
+                "Promedio_Calificacion": 1
+            }
+        }
+    ]
+    resultados3 = list(mycol.aggregate(pipeline3))
+    df3 = pd.DataFrame(resultados3)
+    app2 = dash.Dash()
+    app2.layout = html.Div(children=[html.H3('Dash sobre Samsung y Calificacion'),
+                                     dcc.Graph(id='Dashboard',
+                                               figure={
+                                                   'data': [
+                                                       {'x': df3['Rango'], 'y': df3['Promedio_Calificacion'],
+                                                        'type': 'bar', 'name': 'boats'},
+                                                            ],
+                                                   'layout': {
+                                                       'title': 'Dash basico'
+                                                   }
+                                               })
+                                     ])
+    if __name__ == '__main__':
+        app2.run_server(debug=True)
 
 
 s = Service(ChromeDriverManager().install())
@@ -274,7 +331,7 @@ while True:
             subir()
     elif opcion == 5:
         dashboards()
-        dashboard2()
+        dash2()
     elif opcion == 6:
         print("Adios")
         break
