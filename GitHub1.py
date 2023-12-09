@@ -9,20 +9,14 @@ from webdriver_manager.chrome import ChromeDriverManager
 import time
 import mysql.connector
 import numpy as np
+import pymongo
 
-def conectar():
-    conexion = mysql.connector.connect(
-        host='localhost',
-        port='3306',
-        user='root',
-        password='',
-        database='proyecto')
-    print("Conexion exitosa")
-    cursor = conexion.cursor()
-    cursor.execute("SELECT * FROM tienda")
-    consulta = cursor.fetchall()
-    for i in consulta:
-        print(i)
+def subir():
+    myclient = pymongo.MongoClient("mongodb://localhost:27017")
+    mydb = myclient["mercado_gris"]
+    mycol = mydb["productos_encontrados"]
+    registros = dataframe.to_dict(orient='records')
+    mycol.insert_many(registros)
 
 
 s = Service(ChromeDriverManager().install())
@@ -38,18 +32,20 @@ datos = {
     "Calificacion": [],
     "Puntuaciones": []
 }
-
 dashboard1 = 0
 dashboard2 = 0
 dashboard3 = 0
+dataframe = 0
+
+
 def creardf():
+    global dataframe
     dataframe = pd.DataFrame(datos)
     dataframe = dataframe[dataframe["Precio"] != "No disponible"]
     dataframe = dataframe[dataframe["Calificacion"] != "No disponible"]
     dataframe = dataframe[dataframe["Puntuaciones"] != 0]
     dataframe["Calificacion"] = dataframe["Calificacion"].apply(lambda x: x[:3])
-    print(dataframe)
-    dataframe.to_csv("C:/Users/ecuri/Desktop/dataset.csv")
+    return dataframe
 
 def amazonMx(busqueda, pgs):
     global datos
@@ -158,7 +154,7 @@ def amazonUS(busqueda, pgs):
 
 while True:
     print("-------Menu Proyecto final Programacion para la extraccion de datos-------")
-    opcion = int(input("\nOpciones\n1. Sobre el programa\n2. Extraer datos\n3. Crear dataframe \n4. Opciones de la base de datos. \n5. Obtener Dashboards.\n6. Salir.\n "))
+    opcion = int(input("\nOpciones\n1. Sobre el programa\n2. Extraer datos\n3. Crear dataframe \n4. Subir a la base de datos. \n5. Obtener Dashboards.\n6. Salir.\n "))
     if opcion == 1:
         print("Texto texto texto")
         input(" ")
@@ -178,15 +174,13 @@ while True:
         else:
             print("Comando invalido")
     elif opcion == 3:
-            creardf()
+        creardf()
+        print(dataframe)
     elif opcion == 4:
-        acc = int(input("Opciones \n1. Acceder a la base de datos. \n2. Subir datos a la base de datos\n"))
-        if acc == 1:
-            conectar()
-        elif acc == 2:
-            pass
+        if len(dataframe) == 0:
+            print("Datos insuficientes")
         else:
-            print("Comando invalido")
+            subir()
     elif opcion == 5:
         print("aun nada")
         pass
