@@ -1,4 +1,4 @@
-import requests
+import os
 import pandas as pd
 from bs4 import BeautifulSoup
 from selenium import webdriver
@@ -37,6 +37,7 @@ def conectar():
     for i in tiendas:
         print(i)
 
+
 s = Service(ChromeDriverManager().install())
 opc = Options()
 opc.add_argument("--window-size= 1020, 1200")
@@ -51,6 +52,10 @@ datos = {
     "Puntuaciones": []
 }
 
+
+def creardf():
+    dataframe = pd.DataFrame(datos)
+    print(dataframe)
 
 def amazonMx(busqueda, pgs):
     global datos
@@ -185,10 +190,10 @@ def amazonUS(busqueda, pgs):
         print(pagina)
         contenido_pagina = navegador.page_source
         soup = BeautifulSoup(contenido_pagina, "html.parser")
-        productos = soup.find_all('div', attrs={'class': 'puisg-row'})
+        productos = soup.find_all("div", attrs={"class":"a-section a-spacing-small a-spacing-top-small"})
         botonSiguiente = navegador.find_element(By.LINK_TEXT, "Next")
         # i va a equivaler a cada producto disponible en la pagina porque comparten el atributo del soup
-        for i in productos:
+        for i in productos[1:]:
             marca = "Samsung"
             tienda = "Amazon"
             pais = "USA"
@@ -291,43 +296,39 @@ def bestBuy(busqueda, pgs):
 
 while True:
     print("-------Menu Proyecto final Programacion para la extraccion de datos-------")
-    opcion = int(input("\nOpciones\n1. Sobre el programa\n2. Extraer datos\n3. Opciones de datos. \n4. Opciones de la base de datos. \n5. Obtener Dashboards.\n6. Salir.\n "))
+    opcion = int(input("\nOpciones\n1. Sobre el programa\n2. Extraer datos\n3. Crear dataframe \n4. Opciones de la base de datos. \n5. Obtener Dashboards.\n6. Salir.\n "))
     if opcion == 1:
         print("Texto texto texto")
+        input(" ")
     elif opcion == 2:
+        os.system('cls')
         print("Webs de donde es posible extraer datos:")
         web = int(input("\n1. Amazon Mexico. \n2. Mercado Libre. \n3. Amazon de Estados Unidos. \n4. Best Buy \n"))
         if web == 1:
             pags = int(input("De cuantas paginas quieres extraer los datos (cantidad) "))
             prd = input("Cual es el producto samsung que deseas buscar? solo es necesario el modelo ")
             amazonMx(prd, pags)
+            input(" ")
         elif web == 2:
             pags = int(input("De cuantas paginas quieres extraer los datos (cantidad) "))
             prd = input("Cual es el producto samsung que deseas buscar? solo es necesario el modelo ")
             mercadoLibre(prd, pags)
+            input(" ")
         elif web == 3:
             pags = int(input("De cuantas paginas quieres extraer los datos (cantidad) "))
             prd = input("Cual es el producto samsung que deseas buscar? solo es necesario el modelo ")
             amazonUS(prd, pags)
+            input(" ")
         elif web == 4:
             pags = int(input("De cuantas paginas quieres extraer los datos (cantidad) "))
             prd = input("Cual es el producto samsung que deseas buscar? solo es necesario el modelo ")
             bestBuy(prd, pags)
+            input(" ")
         else:
             print("Comando invalido")
     elif opcion == 3:
-        Acciones = int(input("Que deseas hacer con los datos? \n1. Crear un dataframe \n2. Visualizar DataFrame \n3. Convertir dataframe a csv \n"))
-        if Acciones == 1:
-            data_df = pd.DataFrame(datos)
-        elif Acciones == 2:
-            print(data_df)
-        elif Acciones == 3:
-            if len(data_df) == 0:
-                print("El DataFrame está vacío, no se puede realizar la acción.")
-            else:
-                data_df.to_csv("C:/Users/ecuri/Desktop/dataset.csv")
-        else:
-            print("Comando invalido")
+            creardf()
+            input(" ")
     elif opcion == 4:
         print("aun nada")
         pass
