@@ -109,6 +109,7 @@ def dashboards():
     if __name__ == '__main__':
         app.run_server(debug=True)
 
+
 def dash2():
     myclient = pymongo.MongoClient("mongodb://localhost:27017")
     mydb = myclient["mercado_gris"]
