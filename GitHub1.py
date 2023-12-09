@@ -26,16 +26,15 @@ def conectar():
             #Usamos fetchone porque solamente seleccionaremos una bade de datos, proyecto
             row=cursor.fetchone()
             print("conectado a:{}".format(row))
+            # seleccionamos
+            cursor.execute("SELECT * FROM tienda")
+
+            # obtenemos todos los resultados
+            tiendas = cursor.fetchall()
+            for i in tiendas:
+                print(i)
     except Exception as error:
         print("No se logro completar la conexion")
-
-    #seleccionamos
-    cursor.execute("SELECT * FROM tienda")
-
-    #obtenemos todos los resultados
-    tiendas=cursor.fetchall()
-    for i in tiendas:
-        print(i)
 
 
 s = Service(ChromeDriverManager().install())
@@ -56,6 +55,7 @@ datos = {
 def creardf():
     dataframe = pd.DataFrame(datos)
     print(dataframe)
+    dataframe.to_csv("C:/Users/ecuri/Desktop/dataset.csv")
 
 def amazonMx(busqueda, pgs):
     global datos
@@ -69,7 +69,7 @@ def amazonMx(busqueda, pgs):
     barra.send_keys(Keys.ENTER)
 
     #cant_paginas = 2
-    for pagina in range(pgs):
+    for pagina in range(pgs - 1):
         print(pagina)
         contenido_pagina = navegador.page_source
         soup = BeautifulSoup(contenido_pagina, "html.parser")
@@ -127,7 +127,7 @@ def mercadoLibre(busqueda, pgs):
     time.sleep(10)
 
     #cant_paginas = 3
-    for pagina in range(pgs):
+    for pagina in range(pgs - 1):
         print(pagina)
         # con page_source se obtiene el contenido HTML de la pagina actual
         contenido_pagina = navegador.page_source
@@ -186,7 +186,7 @@ def amazonUS(busqueda, pgs):
     time.sleep(10)
 
     #cant_paginas = 2
-    for pagina in range(pgs):
+    for pagina in range(pgs - 1):
         print(pagina)
         contenido_pagina = navegador.page_source
         soup = BeautifulSoup(contenido_pagina, "html.parser")
@@ -215,67 +215,6 @@ def amazonUS(busqueda, pgs):
                 calificacion = "No disponible"
             try:
                 puntuaciones = i.find('span', attrs={"class": "a-size-base s-underline-text"}).text
-            except:
-                puntuaciones = 0
-            datos["Marca"].append(marca)
-            datos["Tienda"].append(tienda)
-            datos["Pais"].append(pais)
-            datos["Producto"].append(producto)
-            datos["Precio"].append(precio)
-            datos["Calificacion"].append(calificacion)
-            datos["Puntuaciones"].append(puntuaciones)
-        try:
-            botonSiguiente.click()
-        except:
-            print("No se pudo acceder a la siguiente pagina o no existe una siguiente pagina")
-            break
-        time.sleep(5)
-    navegador.close()  # <-- LO SAQUE DEL CICLO, PORQUE CIERRA EL NAVEGADOR, ANTES DE ACABAR EL CICLO DE LAS PAGINAS
-
-
-def bestBuy(busqueda, pgs):
-    # testeo para probar barras de busqueda
-    global datos
-    # mandar comando a la barra de busqueda para que escriba el item escrito y hacer el web scrapping desde la pagina que resulte
-    navegador = webdriver.Chrome(service=s, options=opc)
-    navegador.get("https://www.bestbuy.com/")
-    time.sleep(3)
-    #Esto se hace porque bestbuy te pide seleccionar un pais para comprar (en este caso usamos us) entonces debemos buscar el id del boton de US y presionarlo
-    us = navegador.find_element(By.CLASS_NAME, value="us-link")
-    us.click()
-    time.sleep(4)
-    barra = navegador.find_element(By.ID, value="gh-search-input")
-    time.sleep(2)
-    barra.send_keys(busqueda)
-    time.sleep(3)
-    barra.send_keys(Keys.ENTER)
-    time.sleep(10)
-
-    #cant_paginas = 2
-    for pagina in range(pgs):
-        print(pagina)
-        contenido_pagina = navegador.page_source
-        soup = BeautifulSoup(contenido_pagina, "html.parser")
-        productos = soup.find_all('div', attrs={'class': 'shop-sku-list-item'})
-        botonSiguiente = navegador.find_element(By.LINK_TEXT, "Next")
-        # i va a equivaler a cada producto disponible en la pagina porque comparten el atributo del soup
-        for i in productos:
-            marca = "Samsung"
-            tienda = "Best Buy"
-            pais = "USA"
-            producto = i.find("h4", attrs={"class": "sku-title"}).text
-            # .TEXT PORQUE SI LOS AGREGAS ABAJO MARCA ERROR.
-            # SI EXISTIERA ENTRA EL TRY, EL FIND REGRESA UN OBJETO QUE TIENE EL ATRIBUTO TEXT
-            try:
-                precio = i.find("div", attrs={"class": "priceView-hero-price priceView-customer-price"}).text
-            except:
-                precio = "No disponible"
-            try:
-                calificacion = i.find('p', attrs={"class": "visually-hidden"}).text
-            except:
-                calificacion = "No disponible"
-            try:
-                puntuaciones = i.find('span', attrs={"class": "c-reviews "}).text
             except:
                 puntuaciones = 0
             datos["Marca"].append(marca)
